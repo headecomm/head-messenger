@@ -1,122 +1,121 @@
 const express = require("express");
 const cors = require("cors");
 const { v4: uuid } = require("uuid");
-const Database = require("better-sqlite3");
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-const db = new Database("database.db");
-
-db.exec(`
-CREATE TABLE IF NOT EXISTS campaigns (
-id TEXT PRIMARY KEY,
-name TEXT,
-status TEXT,
-created_at TEXT
-);
-
-CREATE TABLE IF NOT EXISTS numbers (
-id TEXT PRIMARY KEY,
-number TEXT,
-name TEXT,
-status TEXT
-);
-
-CREATE TABLE IF NOT EXISTS leads (
-id TEXT PRIMARY KEY,
-name TEXT,
-phone TEXT,
-blocked INTEGER DEFAULT 0
-);
-
-CREATE TABLE IF NOT EXISTS messages (
-id TEXT PRIMARY KEY,
-campaign_id TEXT,
-number_id TEXT,
-lead_id TEXT,
-status TEXT,
-created_at TEXT
-);
-`);
+const db = {
+  campaigns: [],
+  numbers: [],
+  leads: [],
+  messages: []
+};
 
 app.get("/", (req, res) => {
-res.send("Head Messenger API running");
+  res.send(`
+    <html>
+      <head>
+        <title>Head Messenger</title>
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+            background: #f7f7fb;
+            color: #222;
+          }
+          .box {
+            max-width: 700px;
+            background: white;
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+          }
+          h1 {
+            margin-top: 0;
+            color: #5b3df5;
+          }
+          code {
+            background: #f1f1f7;
+            padding: 2px 6px;
+            border-radius: 6px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="box">
+          <h1>Head Messenger</h1>
+          <p>Sistema publicado com sucesso na Hostinger.</p>
+          <p>Esta é a primeira base do projeto.</p>
+          <p>Endpoints iniciais:</p>
+          <ul>
+            <li><code>GET /campaigns</code></li>
+            <li><code>POST /campaigns</code></li>
+            <li><code>GET /numbers</code></li>
+            <li><code>POST /numbers</code></li>
+            <li><code>GET /leads</code></li>
+            <li><code>POST /leads</code></li>
+          </ul>
+        </div>
+      </body>
+    </html>
+  `);
 });
 
 /* campanhas */
-
 app.post("/campaigns", (req, res) => {
-const id = uuid();
+  const item = {
+    id: uuid(),
+    name: req.body.name || "Nova campanha",
+    status: "draft",
+    created_at: new Date().toISOString()
+  };
 
-db.prepare(`
-INSERT INTO campaigns (id,name,status,created_at)
-VALUES (?,?,?,?)
-`).run(
-id,
-req.body.name,
-"draft",
-new Date().toISOString()
-);
-
-res.send({ id });
+  db.campaigns.push(item);
+  res.json(item);
 });
 
 app.get("/campaigns", (req, res) => {
-const data = db.prepare(`
-SELECT * FROM campaigns
-ORDER BY created_at DESC
-`).all();
-
-res.send(data);
+  res.json(db.campaigns);
 });
 
-/* numeros */
-
+/* números */
 app.post("/numbers", (req, res) => {
-const id = uuid();
+  const item = {
+    id: uuid(),
+    number: req.body.number || "",
+    name: req.body.name || "Novo número",
+    status: "offline"
+  };
 
-db.prepare(`
-INSERT INTO numbers (id,number,name,status)
-VALUES (?,?,?,?)
-`).run(
-id,
-req.body.number,
-req.body.name,
-"offline"
-);
-
-res.send({ id });
+  db.numbers.push(item);
+  res.json(item);
 });
 
 app.get("/numbers", (req, res) => {
-const data = db.prepare(`SELECT * FROM numbers`).all();
-res.send(data);
+  res.json(db.numbers);
 });
 
 /* leads */
-
 app.post("/leads", (req, res) => {
-const id = uuid();
+  const item = {
+    id: uuid(),
+    name: req.body.name || "Novo lead",
+    phone: req.body.phone || "",
+    blocked: false
+  };
 
-db.prepare(`
-INSERT INTO leads (id,name,phone)
-VALUES (?,?,?)
-`).run(
-id,
-req.body.name,
-req.body.phone
-);
-
-res.send({ id });
+  db.leads.push(item);
+  res.json(item);
 });
 
 app.get("/leads", (req, res) => {
-const data = db.prepare(`SELECT * FROM leads`).all();
-res.send(data);
+  res.json(db.leads);
 });
 
-app.listen(3000, () => {
-console.log("Server running");
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, () => {
+  console.log(`Head Messenger rodando na porta ${PORT}`);
 });
