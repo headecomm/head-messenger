@@ -1,9 +1,14 @@
 {
+  "name": "head-messenger",
+  "version": "1.0.0",
+  "description": "Head Messenger",
+  "main": "src/server.js",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
-    "build": "tsc",
-    "start": "node dist/server.js",
-    "db:migrate": "node dist/database/migrate.js",
-    "db:seed": "node dist/database/seed.js"
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
   }
 }
